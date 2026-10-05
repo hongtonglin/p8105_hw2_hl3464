@@ -1,0 +1,56 @@
+---
+title: "p8105_hw2_hl3464"
+author: "Hongtong Lin"
+date: "2026-10-05"
+output: github_document
+---
+
+load the libraries  
+```{r, message=FALSE}
+library(tidyverse)
+library(ggplot2)
+```
+  
+## Problem 1  
+
+```{r read csv}
+nyc_transit <- 
+  read_csv("NYC_Transit_Subway_Entrance_And_Exit_Data.csv",
+           na = c("NA", "")) |> 
+  janitor::clean_names()
+```
+  
+```{r clean data set}
+nyc_transit_tidy <-
+  nyc_transit |> 
+  select(
+    line, station_name, station_latitude, station_longitude, route1:route11, entry, vending, entrance_type, ada
+  ) |> 
+  mutate(
+    entry = recode_values(
+      entry,
+      "YES" ~ TRUE,
+      "NO" ~ FALSE
+    )
+  )
+``` 
+  
+  
+## Problem 2  
+
+```{r}
+trash_wheel <- 
+  readxl::read_xlsx("202509 Trash Wheel Collection Data.xlsx",
+                    sheet = "Mr. Trash Wheel",
+                    skip = 1,
+                    n_max = 707
+                    ) |> 
+  janitor::clean_names() |> 
+  mutate(
+    sports_balls = round(sports_balls, 0) |> 
+      as.integer()
+  )
+```
+
+
+
