@@ -6,7 +6,7 @@ output: github_document
 ---
 
 load the libraries  
-```{r, message=FALSE}
+```{r load libraries, message=FALSE}
 library(tidyverse)
 library(ggplot2)
 ```
@@ -89,7 +89,7 @@ gwynns_trash_wheel <-
 ```
   
 Join data frames together  
-```{r}
+```{r join data frames together, results = "hide"}
 trash_wheel <- 
   bind_rows(mr_trash_wheel, prof_trash_wheel, gwynns_trash_wheel) |> 
   relocate(trash_wheel)
@@ -97,9 +97,12 @@ trash_wheel <-
 head(trash_wheel)
 ```
 
-```{r, eval = FALSE}
-str(trash_wheel)  
+```{r check trash_wheel joined data frame, message = FALSE}
+str(trash_wheel)
+```
 
+
+```{r calculations from the trash_wheel df, results = "hide", message = FALSE}
 prof_trash_wheel |> 
   pull(weight_tons) |> 
   sum() # 282.26 tons
@@ -116,5 +119,97 @@ gwynns_trash_wheel |>
 - There are 15 variables or columns and 1,188 observations (rows) in the trash_wheel data frame. Some key variables are "trash_wheel" for the name of the trash_wheel, "dumpster" as the dumpster number, "weight_tons", and so on.
 - The total weight of trash collected by Prof. Trash Wheel is 282.26 tons.
 - The total number of cigarette butts collected by Gwynnda in June of 2022 is 18,120.
+  
+  
+## Problem 3  
 
+### MCI_baseline data exploration
+```{r tidy the mci_baseline df, message = FALSE}
+MCI_baseline <- 
+  read_csv("data_mci/MCI_baseline.csv",
+           skip = 1,
+           na = ".") |> 
+  janitor::clean_names() |> 
+  filter(!is.na(age_at_onset)) |> 
+  mutate(
+    sex = recode_values(
+      sex,
+      0 ~ "female",
+      1 ~ "male"
+    ),
+    apoe4 = recode_values(
+      apoe4,
+      0 ~ "non-carrier",
+      1 ~ "carrier"
+    )
+  )
+```
+  
+```{r overview of the mci_baseline df, results = "hide", message = FALSE}
+dim(MCI_baseline) #97 rows, 6 columns after tidying up the data  
+
+read_csv("data_mci/MCI_baseline.csv",
+         skip = 1) |> 
+  nrow() # 483 rows in the original data set 
+
+mean(MCI_baseline$age_at_onset) # 70.26 years - baseline onset age
+```
+
+
+```{r proportion of carrier in women}
+MCI_baseline |> 
+  filter(sex == "female") |> 
+  summarise(prop_apoe4_carrier = mean(apoe4 == "carrier")) # prop is 0.652
+  
+```
+
+- The mci_baseline original data set has a lot of missing values represented by "." meaning that individuals are free of MCI at baseline during the follow up. I excluded these missing data because these individuals did not meet the stated inclusion criteria. The original data set also has a row of explanations at the top, so I skipped this line when importing the csv file. After that, I re-coded the values for the sex and apoe4 variables because using numbers 1 and 0 can be confusing.
+- 483 individuals were recruited, and 97 of them develop MCI. 
+- The average baseline onset age is 70.26 years. 
+- 65.2% of women who developed MCI at baseline are apoe4 carriers.  
+  
+
+### mci_amyloid data exploration  
+
+```{r tidy up the mci_amyloid df, warning = FALSE, message= FALSE}
+mci_amyloid <-
+  read_csv("data_mci/mci_amyloid.csv",
+           skip = 1,
+           na = "NA") |>
+  janitor::clean_names() |> 
+  mutate(
+    baseline = as.numeric(baseline),
+    time_2 = as.numeric(time_2),
+    time_4 = as.numeric(time_4),
+    time_6 = as.numeric(time_6),
+    time_8 = as.numeric(time_8)
+  ) |> 
+  rename(id = study_id) # diectly replace the variable name "study_id" into "id"
+```
+  
+- This mci_amyloid csv file has a top row with some explanations, so i skipped it when importing the csv. There are many NA values in the data set, so I used na = "NA" to identify those values. After importing, I found that almost all variables were in the character data type, so I coerced them into numeric variables.  
+
+no match between 2 data frames  
+```{r use anti_join to find ppl only in MCI_baseline}
+only_baseline <- anti_join(MCI_baseline, mci_amyloid, by = "id")
+nrow(only_baseline) # 14,49,268
+```
+  
+```{r se anti_join to find ppl only in mci_amyloid}
+only_amyloid <- anti_join(mci_amyloid, MCI_baseline, by = "id") 
+nrow(only_amyloid)
+# 393 individuals only in mci_amyloid
+```
+
+- Individual with id 14, 49, and 268 are only in the "MCI_baseline" data set.
+- 393 individuals in total are only in "mci_amyloid" data set.  
+
+```{r combine 2 data sets: only participants who appear in both data sets}
+mci_combined <- inner_join(MCI_baseline, mci_amyloid, by = "id")
+
+nrow(mci_combined) # 94 individuals
+
+write_csv(mci_combined, "data_mci/mci_combined.csv")
+```
+- 94 individuals in total are found in both the mci_baseline and mci_amyloid data sets. 
 
