@@ -8,7 +8,6 @@ output: github_document
 load the libraries  
 ```{r load libraries, message=FALSE}
 library(tidyverse)
-library(ggplot2)
 ```
   
 ## Problem 1  
