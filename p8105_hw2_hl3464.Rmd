@@ -38,19 +38,83 @@ nyc_transit_tidy <-
   
 ## Problem 2  
 
-```{r}
-trash_wheel <- 
+tidy mr_trash_wheel data frame
+```{r tidy mr_trash_wheel}
+mr_trash_wheel <- 
   readxl::read_xlsx("202509 Trash Wheel Collection Data.xlsx",
                     sheet = "Mr. Trash Wheel",
                     skip = 1,
-                    n_max = 707
+                    range = readxl::cell_cols("A:N")
                     ) |> 
   janitor::clean_names() |> 
   mutate(
     sports_balls = round(sports_balls, 0) |> 
-      as.integer()
-  )
+      as.integer(),
+    year = as.integer(year),
+    trash_wheel = "Mr. Trash Wheel"
+  ) |> 
+  filter(!is.na(dumpster))
+```
+  
+tidy prof_trash_wheel data frame
+```{r tidy prof_trash_wheel}
+prof_trash_wheel <- 
+  readxl::read_xlsx("202509 Trash Wheel Collection Data.xlsx",
+                    sheet = "Professor Trash Wheel",
+                    skip = 1,
+                    range = readxl::cell_cols("A:M")
+                    ) |> 
+  janitor::clean_names() |> 
+  mutate(
+    year = as.integer(year),
+    trash_wheel = "Professor Trash Wheel"
+  ) |> 
+  filter(!is.na(dumpster))
+```
+  
+tidy gwynns_trash_wheel data frame
+```{r tidy gwynns_trash_wheel}
+gwynns_trash_wheel <- 
+  readxl::read_xlsx("202509 Trash Wheel Collection Data.xlsx",
+                    sheet = "Gwynns Falls Trash Wheel",
+                    skip = 1,
+                    range = readxl::cell_cols("A:L")
+                    ) |> 
+  janitor::clean_names() |> 
+  mutate(
+    year = as.integer(year),
+    trash_wheel = "Gwynns Trash Wheel"
+  ) |>
+  filter(!is.na(dumpster))
+```
+  
+Join data frames together  
+```{r}
+trash_wheel <- 
+  bind_rows(mr_trash_wheel, prof_trash_wheel, gwynns_trash_wheel) |> 
+  relocate(trash_wheel)
+
+head(trash_wheel)
 ```
 
+```{r, eval = FALSE}
+str(trash_wheel)  
+
+prof_trash_wheel |> 
+  pull(weight_tons) |> 
+  sum() # 282.26 tons
+
+gwynns_trash_wheel |> 
+  filter(
+    year == 2022,
+    month == "June"
+  ) |> 
+  pull(cigarette_butts) |> 
+  sum() #18120 
+
+```
+- There are 15 variables or columns and 1,188 observations (rows) in the trash_wheel data frame. Some key variables are "trash_wheel" for the name of the trash_wheel, "dumpster" as the dumpster number, "weight_tons", and so on.
+- The total weight of trash collected by Prof. Trash Wheel is 282.26 tons.
+- The total number of cigarette butts collected by Gwynnda in June of 2022 is 18,120.
 
 
