@@ -40,7 +40,7 @@ nyc_transit_tidy <-
 tidy mr_trash_wheel data frame
 ```{r tidy mr_trash_wheel}
 mr_trash_wheel <- 
-  readxl::read_xlsx("202509 Trash Wheel Collection Data.xlsx",
+  readxl::read_xlsx("202610 Trash Wheel Collection Data.xlsx",
                     sheet = "Mr. Trash Wheel",
                     skip = 1,
                     range = readxl::cell_cols("A:N")
@@ -58,7 +58,7 @@ mr_trash_wheel <-
 tidy prof_trash_wheel data frame
 ```{r tidy prof_trash_wheel}
 prof_trash_wheel <- 
-  readxl::read_xlsx("202509 Trash Wheel Collection Data.xlsx",
+  readxl::read_xlsx("202610 Trash Wheel Collection Data.xlsx",
                     sheet = "Professor Trash Wheel",
                     skip = 1,
                     range = readxl::cell_cols("A:M")
@@ -66,7 +66,8 @@ prof_trash_wheel <-
   janitor::clean_names() |> 
   mutate(
     year = as.integer(year),
-    trash_wheel = "Professor Trash Wheel"
+    trash_wheel = "Professor Trash Wheel",
+    plastic_bottles = as.numeric(plastic_bottles)
   ) |> 
   filter(!is.na(dumpster))
 ```
@@ -74,8 +75,8 @@ prof_trash_wheel <-
 tidy gwynns_trash_wheel data frame
 ```{r tidy gwynns_trash_wheel}
 gwynns_trash_wheel <- 
-  readxl::read_xlsx("202509 Trash Wheel Collection Data.xlsx",
-                    sheet = "Gwynns Falls Trash Wheel",
+  readxl::read_xlsx("202610 Trash Wheel Collection Data.xlsx",
+                    sheet = "Gwynnda the Good Wheel of the W",
                     skip = 1,
                     range = readxl::cell_cols("A:L")
                     ) |> 
